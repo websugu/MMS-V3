@@ -1,0 +1,197 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 🔐 Helper function: check if user is admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // 🛍️ Products - public read, admin write only
+    match /products/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // 👤 Users - read for login, write own profile
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 📂 User subcollections (like orders, settings, etc.)
+    match /users/{userId}/{document=**} {
+      // Owner access
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Admin can read everything
+      allow read: if isAdmin();
+    }
+
+    // 📦 Orders collection
+    match /orders/{orderId} {
+      // Logged-in users can create orders
+      allow create: if request.auth != null;
+
+      // Users can read their own orders
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+
+      // ✅ Admin can read ALL orders
+      allow read: if isAdmin();
+    }
+
+  }
+}
+
+
+
+
+
+
+RULE 2
+
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Products - public read/write for admin
+    match /products/{doc} {
+      allow read, write: if true;  
+    }
+    
+    // Users - read for login, write own
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ALL subcollections - OWN + ADMIN READ ALL ORDERS
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if true;
+    }
+
+    // ADD THIS BLOCK ↓↓↓
+    match /orders/{orderId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+    // END OF ADDED BLOCK ↑↑↑
+
+  }
+}
+    
+
+
+
+    nav
+
+    <a href="account.html" class="nav-link ${isActive('account.html')}">
+            <i class="fas fa-user"></i> Mon compte
+          </a>
+          <a href="cart.html" class="nav-link ${isActive('cart.html')}">
+            <i class="fas fa-shopping-cart"></i> Panier
+            ${totalItems > 0 ? `<span class="nav-badge">${totalItems}</span>` : ''}
+          </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+          rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Products - public read, admin write only
+    match /products/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users - read for login/profile, write own profile only
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User subcollections (cart, orders, etc.)
+    // Owner has full read/write. Admin can read for dashboard fallback.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+
+    // Orders collection
+    // Anyone authenticated can create an order.
+    // Admins can read ALL orders (list queries allowed because no resource.data here).
+    // Users can read their own orders (must use a filtered query matching resource.data.uid).
+    match /orders/{orderId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && isAdmin();
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null && isAdmin();
+    }
+
+    // Admin whitelist collection - only admins can read/write, public cannot access
+    match /admins/{doc} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Helper function - checks hardcoded admin UID OR admins collection
+    // Create a document at /admins/{uid} to grant admin access without redeploying rules
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.uid == 'Dyj3kR9tvwYZJOovfuS1HjpgZdI2' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+  }
+}
+
+
+
+
+📱 User Experience
+#	Feature	Description
+14	Search Autocomplete	Live search suggestions on store page
+15	Related Products	"You may also like" section on product.html
+16	Guest Checkout	Buy without account; collect details at checkout only
+17	Order Confirmation / Receipt	Printable receipt after checkout with order details
+18	SMS Order Notifications	Auto-SMS customer when order ships/delivers
+
+
+🔧 Admin & Operations
+#	Feature	Description
+9	Sales Analytics Charts	Replace dashboard numbers with Chart.js graphs (daily/weekly/monthly)
+10	Customer Management	Admin page listing all users, their orders, total spent
+11	Order Export (CSV)	Export orders by date range for accounting/taxes
+12	Product Image Upload	Upload to Firebase Storage instead of pasting URLs
+13	Admin Activity Logs	Track who deleted products, changed order status, when
+
+
+💰 Revenue Boosters
+#	Feature	Description
+5	Discount / Promo Codes	Admin generates codes (SAVE10), apply at checkout, store in Firestore
+6	Featured / Bestseller Section	Admin marks products; highlighted grid on homepage
+7	Product Reviews & Ratings	Customers rate after delivery; average shown on product cards
+8	Wishlist / Favorites	Heart icon per product; saved to user's Firestore doc
+
+
+🔥 High-Impact (Start Here)
+#	Feature	Why It Matters
+1	Persistent Cart	Save cart to localStorage so users don't lose items on refresh
+2	Stock Management	Add stock field to products, prevent overselling, show "Out of Stock" badges
+3	Customer Order History	Show past orders in account.html with re-order button
+4	Product Categories / Filters	Add category field to products; filter sidebar on store page

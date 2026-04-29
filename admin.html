@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Admin Dashboard</title>
+        <link rel="icon" href="IMG/favicon.png" sizes="any">
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        color: #1e293b;
+      }
+
+      .navbar {
+        background: white;
+        padding: 20px 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .logout-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+      }
+
+      .app-layout {
+        display: flex;
+        min-height: calc(100vh - 80px);
+      }
+
+      .sidebar {
+        width: 280px;
+        background: white;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+        padding: 32px 24px;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .sidebar-item {
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        color: #64748b;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sidebar-item.active {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+      }
+
+      .content-section {
+        display: none;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        min-height: 600px;
+      }
+
+      .content-section.active {
+        display: block;
+      }
+
+      /* Dashboard Stats */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+      .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+      }
+      .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+      .stat-icon.blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .stat-icon.green {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .stat-icon.orange {
+        background: #fed7aa;
+        color: #92400e;
+      }
+      .stat-icon.red {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1e293b;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      /* Filter Buttons */
+      .filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+      .filter-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        color: #64748b;
+        transition: all 0.2s;
+      }
+      .filter-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+      }
+      .filter-btn.active {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        background: white;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        animation: modalSlide 0.3s ease;
+      }
+      @keyframes modalSlide {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-body {
+        padding: 32px;
+      }
+      .modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+      }
+      .modal-close:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 14px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-label {
+        color: #64748b;
+        font-weight: 500;
+      }
+      .detail-value {
+        color: #1e293b;
+        font-weight: 600;
+      }
+
+      /* Recent Activity */
+      .recent-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .recent-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+      }
+      .recent-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      /* Products Form */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+      .form-group {
+        margin-bottom: 24px;
+      }
+      .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #374151;
+      }
+      .form-input,
+      .form-textarea {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        font-family: inherit;
+        transition: all 0.2s;
+      }
+      .form-input:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      }
+
+      .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 15px;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+      }
+      .btn-secondary {
+        background: #6b7280;
+        color: white;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .variants-section {
+        grid-column: 1 / -1;
+        background: #f8fafc;
+        padding: 24px;
+        border-radius: 12px;
+      }
+      .add-variant-btn {
+        background: #10b981;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        margin-bottom: 16px;
+      }
+
+      /* Products List */
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+      }
+      .product-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s;
+        position: relative;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+      }
+      .product-card.edit-active {
+        border: 3px solid #3b82f6;
+      }
+      .edit-mode {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: #3b82f6;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+      }
+      .product-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 16px;
+        margin-bottom: 20px;
+      }
+      .product-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .product-price {
+        font-size: 28px;
+        font-weight: 700;
+        color: #059669;
+        margin-bottom: 24px;
+      }
+
+      /* Orders Table */
+      .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        min-height: 400px;
+      }
+
+      .orders-table th {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 20px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .orders-table td {
+        padding: 20px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+      }
+
+      .orders-table tr:hover {
+        background: #f8fafc;
+      }
+
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background: #fed7aa;
+        color: #92400e;
+      }
+      .status-shipped {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .status-delivered {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .status-cancelled {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .total-amount {
+        font-weight: 700;
+        font-size: 18px;
+        color: #059669;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .orders-list {
+        max-height: 800px;
+        overflow-y: auto;
+      }
+
+      /* Utils */
+      .message {
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        font-weight: 500;
+        text-align: center;
+      }
+      .message-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+      .message-error {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+      }
+      .loading {
+        text-align: center;
+        padding: 60px;
+        color: #94a3b8;
+      }
+      .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 16px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .count-badge {
+        background: #3b82f6;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 1024px) {
+        .app-layout {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          box-shadow: none;
+          padding: 20px 0;
+        }
+        .sidebar-nav {
+          flex-direction: row;
+          overflow-x: auto;
+        }
+        .main-content {
+          padding: 20px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .navbar {
+          padding: 16px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="logo"><i class="fas fa-store"></i> Admin Dashboard</div>
+      <div class="user-info" id="user-info">
+        <span id="user-name">Loading...</span>
+        <button onclick="adminLogout()" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="app-layout">
+      <div class="sidebar">
+        <div class="sidebar-nav">
+          <button class="sidebar-item active" onclick="showTab('dashboard')">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </button>
+          <button class="sidebar-item" onclick="showTab('products')">
+            <i class="fas fa-boxes"></i> Products
+            <span id="products-count" class="count-badge"></span>
+          </button>
+          <button class="sidebar-item" onclick="showTab('orders')">
+            <i class="fas fa-shopping-bag"></i> Orders
+            <span id="orders-count" class="count-badge"></span>
+          </button>
+          <button class="sidebar-item" onclick="showTab('customers')">
+            <i class="fas fa-users"></i> Customers
+            <span id="customers-count" class="count-badge"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div
+          id="message"
+          class="message"
+          style="
+            display: block;
+            min-height: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+          "
+        ></div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="content-section active">
+          <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 32px">
+            <i class="fas fa-chart-line"></i> Dashboard Overview
+          </h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-boxes"></i></div>
+              <div>
+                <div class="stat-value" id="dash-products">0</div>
+                <div class="stat-label">Total Products</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <i class="fas fa-shopping-bag"></i>
+              </div>
+              <div>
+                <div class="stat-value" id="dash-orders">0</div>
+                <div class="stat-label">Total Orders</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange">
+                <i class="fas fa-rupee-sign"></i>
+              </div>
+              <div>
+                <div class="stat-value" id="dash-revenue">0F</div>
+                <div class="stat-label">Total Revenue</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-clock"></i></div>
+              <div>
+                <div class="stat-value" id="dash-pending">0</div>
+                <div class="stat-label">Pending Orders</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px">
+            <div>
+              <h3
+                style="font-size: 20px; font-weight: 700; margin-bottom: 20px"
+              >
+                Recent Orders
+              </h3>
+              <div id="dash-recent-orders" class="recent-list">
+                <div class="loading">
+                  <div class="spinner"></div>
+                  Loading...
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3
+                style="font-size: 20px; font-weight: 700; margin-bottom: 20px"
+              >
+                Order Status Breakdown
+              </h3>
+              <div id="dash-status-breakdown" class="recent-list">
+                <div class="loading">
+                  <div class="spinner"></div>
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products-section" class="content-section">
+          <div class="form-grid">
+            <div>
+              <h2 style="margin-bottom: 8px; font-size: 28px; font-weight: 700">
+                Add/Edit Product
+              </h2>
+              <p style="color: #64748b">
+                Add models (iPhone 11 Pro) & colors (Black) for variants
+              </p>
+            </div>
+            <div style="text-align: right">
+              <button onclick="resetProductForm()" class="btn btn-secondary">
+                <i class="fas fa-plus"></i> New Product
+              </button>
+            </div>
+          </div>
+
+          <form id="product-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Product Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  class="form-input"
+                  placeholder="iPhone 15 Pro Max"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Price (F)</label>
+                <input
+                  type="number"
+                  id="price"
+                  class="form-input"
+                  placeholder="99999"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Image URL</label>
+                <input
+                  type="url"
+                  id="imageUrl"
+                  class="form-input"
+                  placeholder="https://images.unsplash.com/photo-xxx"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea
+                  id="description"
+                  class="form-textarea"
+                  rows="3"
+                  placeholder="Premium smartphone with A17 Pro chip..."
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="category" class="form-input">
+                  <option value="">-- Select Category --</option>
+                  <option value="Coques">Coques</option>
+                  <option value="Accessoires">Accessoires</option>
+                  <option value="Chargeurs">Chargeurs</option>
+                  <option value="Écouteurs">Écouteurs</option>
+                  <option value="Autres">Autres</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="variants-section">
+              <button type="button" id="add-model" class="add-variant-btn">
+                <i class="fas fa-plus"></i> Add Model
+              </button>
+              <div id="models-container"></div>
+
+              <button
+                type="button"
+                id="add-color"
+                class="add-variant-btn"
+                style="background: #f59e0b"
+              >
+                <i class="fas fa-palette"></i> Add Color (Max 4)
+              </button>
+              <span id="color-limit" style="color: #94a3b8; font-size: 14px"
+                >0/4</span
+              >
+              <div id="colors-container"></div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              style="width: 100%; font-size: 18px; padding: 20px"
+            >
+              <i class="fas fa-save"></i> Save Product
+            </button>
+          </form>
+
+          <div style="margin-top: 48px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+                gap: 16px;
+              "
+            >
+              <h3 style="font-size: 24px">All Products</h3>
+              <div style="position: relative; max-width: 320px; width: 100%">
+                <i
+                  class="fas fa-search"
+                  style="
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                  "
+                ></i>
+                <input
+                  type="text"
+                  id="product-search"
+                  class="form-input"
+                  placeholder="Search products..."
+                  style="padding-left: 44px"
+                />
+              </div>
+            </div>
+            <div id="admin-products">
+              <table class="orders-table" style="min-height: unset">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="orders-section" class="content-section">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 24px;
+              flex-wrap: wrap;
+              gap: 16px;
+            "
+          >
+            <h2 style="font-size: 28px; font-weight: 700">
+              <i class="fas fa-list"></i> All Orders
+            </h2>
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <div style="position: relative; max-width: 280px; width: 100%">
+                <i
+                  class="fas fa-search"
+                  style="
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                  "
+                ></i>
+                <input
+                  type="text"
+                  id="order-search"
+                  class="form-input"
+                  placeholder="Search by name, phone, ID..."
+                  style="padding-left: 44px"
+                />
+              </div>
+              <button
+                onclick="loadOrders()"
+                class="btn btn-secondary"
+                style="padding: 12px 24px"
+              >
+                <i class="fas fa-refresh"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div class="filter-bar">
+            <button
+              class="filter-btn active"
+              onclick="filterOrders('all', this)"
+            >
+              All Orders
+            </button>
+            <button class="filter-btn" onclick="filterOrders('pending', this)">
+              Pending
+            </button>
+            <button
+              class="filter-btn"
+              onclick="filterOrders('processed', this)"
+            >
+              Processed
+            </button>
+            <button class="filter-btn" onclick="filterOrders('shipped', this)">
+              Shipped
+            </button>
+            <button
+              class="filter-btn"
+              onclick="filterOrders('delivered', this)"
+            >
+              Delivered
+            </button>
+          </div>
+          <div id="admin-orders" class="orders-list">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Customers Section -->
+        <div id="customers-section" class="content-section">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 24px;
+              flex-wrap: wrap;
+              gap: 16px;
+            "
+          >
+            <h2 style="font-size: 28px; font-weight: 700">
+              <i class="fas fa-users"></i> All Customers
+            </h2>
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+              "
+            >
+              <div style="position: relative; max-width: 280px; width: 100%">
+                <i
+                  class="fas fa-search"
+                  style="
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                  "
+                ></i>
+                <input
+                  type="text"
+                  id="customer-search"
+                  class="form-input"
+                  placeholder="Search by name, email, phone..."
+                  style="padding-left: 44px"
+                />
+              </div>
+              <button
+                onclick="loadCustomers()"
+                class="btn btn-secondary"
+                style="padding: 12px 24px"
+              >
+                <i class="fas fa-refresh"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div id="admin-customers" class="orders-list">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Contact</th>
+                  <th>Location</th>
+                  <th>Orders</th>
+                  <th>Total Spent</th>
+                  <th>Logins</th>
+                </tr>
+              </thead>
+              <tbody id="customers-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div
+      id="order-modal"
+      class="modal-overlay"
+      onclick="if (event.target === this) closeOrderModal();"
+    >
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 style="font-size: 22px; font-weight: 700" id="modal-title">
+            Order Details
+          </h3>
+          <button onclick="closeOrderModal()" class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="modal-body">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase & Admin Scripts -->
+    <script type="module">
+      import { auth } from "./JS/firebase.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          window.location.href = "admin-login.html";
+          return;
+        }
+        document.getElementById("user-name").textContent =
+          user.email || "Admin";
+      });
+    </script>
+    <script type="module" src="./JS/admin-auth.js"></script>
+    <script type="module" src="./JS/admin.js"></script>
+  </body>
+</html>
+

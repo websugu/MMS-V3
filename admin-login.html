@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-container {
+      background: white;
+      padding: 48px;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    
+    .logo {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    
+    .subtitle {
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+    }
+    
+    .login-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59,130,246,0.3);
+    }
+    
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .error {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 12px;
+      margin: 16px 0;
+      border: 1px solid #fca5a5;
+      font-size: 14px;
+    }
+    
+    @media (max-width: 480px) {
+      .login-container {
+        margin: 20px;
+        padding: 32px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div>
+      <h1 class="logo">Admin Portal</h1>
+      <p class="subtitle">Sign in to manage your store</p>
+    </div>
+    
+    <div id="error-message" class="error" style="display: none;"></div>
+    
+    <form id="admin-login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="admin-email" class="form-input" placeholder="admin@store.com" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="admin-password" class="form-input" placeholder="your-password" required>
+      </div>
+      
+      <button type="submit" class="login-btn" id="login-btn">
+        <i class="fas fa-sign-in-alt"></i> Admin Login
+      </button>
+    </form>
+    
+    <p style="margin-top: 24px; color: #94a3b8; font-size: 14px;">
+      Don't have admin access? <a href="index.html" style="color: #3b82f6;">Visit Store</a>
+    </p>
+  </div>
+
+  <script type="module" src="./JS/admin-login.js"></script>
+</body>
+</html>
+

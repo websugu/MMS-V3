@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Products - public read, admin write only
+    match /products/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users - read for login/profile, write own profile only
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User subcollections (cart, orders, etc.)
+    // Owner has full read/write. Admin can read for dashboard fallback.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+
+    // Orders collection
+    // Anyone (authenticated or guest) can create an order.
+    // Admins can read ALL orders.
+    // Authenticated users can read their own orders (must use a filtered query matching resource.data.uid).
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read: if request.auth != null && isAdmin();
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null && isAdmin();
+    }
+
+    // Phone-to-email mapping for login by phone number
+    // Public read so unauthenticated users can look up their email during login
+    // Only authenticated users can create (during signup)
+    match /phoneEmails/{phone} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    // Email-to-phone mapping for login by phone number
+    // Public read so unauthenticated users can look up their phone from email during login
+    // Only authenticated users can create (during signup)
+    match /phoneEmailsByEmail/{email} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    // Helper function - checks hardcoded admin UID OR admins collection
+    // Create a document at /admins/{uid} to grant admin access without redeploying rules
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.uid == 'Dyj3kR9tvwYZJOovfuS1HjpgZdI2' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+  }
+}
+

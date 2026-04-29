@@ -1,0 +1,36 @@
+{
+  "name": "My Store - Mon Manga Store",
+  "short_name": "MMS",
+  "description": "Boutique en ligne pour coques iPhone et accessoires",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#e2171f",
+  "theme_color_light": "#e2171f",
+  "theme_color_dark": "#e23232",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "IMG/favicon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "IMG/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "IMG/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping", "retail"],
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

@@ -38,26 +38,32 @@ let currentTab = 'dashboard';
 let modelCount = 0;
 let colorCount = 0;
 let currentOrderFilter = 'all';
+let lastModelValue = '';
+let lastColorValue = '';
 
 // Dynamic Variants Setup
-addModelBtn.addEventListener('click', addModelField);
-addColorBtn.addEventListener('click', addColorField);
+addModelBtn.addEventListener('click', () => addModelField(lastModelValue));
+addColorBtn.addEventListener('click', () => addColorField(lastColorValue));
 
-function addModelField() {
+function addModelField(prefillValue) {
   modelCount++;
   const div = document.createElement('div');
   div.className = 'model-row';
   div.style.cssText = 'display: flex; gap: 12px; align-items: center; margin-bottom: 12px; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb;';
   div.innerHTML = `
-    <input type="text" placeholder="Model name (e.g. iPhone 11 Pro)" class="form-input model-input" style="flex: 1; padding: 12px 16px;">
+    <input type="text" placeholder="Model name (e.g. iPhone 11 Pro)" class="form-input model-input" style="flex: 1; padding: 12px 16px;" value="${prefillValue || ''}">
     <button type="button" onclick="removeField(this)" class="btn btn-danger" style="padding: 12px 16px; font-size: 14px; min-width: 44px;">
       <i class="fas fa-trash"></i>
     </button>
   `;
   modelsContainer.appendChild(div);
+  // Track last entered model value
+  const input = div.querySelector('.model-input');
+  input.addEventListener('blur', () => { if (input.value.trim()) lastModelValue = input.value.trim(); });
+  if (prefillValue) input.focus();
 }
 
-function addColorField() {
+function addColorField(prefillValue) {
   if (colorCount >= 4) {
     colorLimit.textContent = 'MAX 4 REACHED';
     colorLimit.style.color = '#ef4444';
@@ -75,12 +81,16 @@ function addColorField() {
   div.className = 'color-row';
   div.style.cssText = 'display: flex; gap: 12px; align-items: center; margin-bottom: 12px; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb;';
   div.innerHTML = `
-    <input type="text" placeholder="Color (e.g. Black)" class="form-input color-input" style="flex: 1; padding: 12px 16px;">
+    <input type="text" placeholder="Color (e.g. Black)" class="form-input color-input" style="flex: 1; padding: 12px 16px;" value="${prefillValue || ''}">
     <button type="button" onclick="removeField(this)" class="btn btn-danger" style="padding: 12px 16px; font-size: 14px; min-width: 44px;">
       <i class="fas fa-trash"></i>
     </button>
   `;
   colorsContainer.appendChild(div);
+  // Track last entered color value
+  const input = div.querySelector('.color-input');
+  input.addEventListener('blur', () => { if (input.value.trim()) lastColorValue = input.value.trim(); });
+  if (prefillValue) input.focus();
 }
 
 function removeField(btn) {
@@ -952,4 +962,29 @@ onAuthStateChanged(auth, (user) => {
     loadDashboard();
   }
 });
+
+// Add all iPhone models
+window.addAlliPhoneModels = function() {
+  modelsContainer.innerHTML = '';
+  modelCount = 0;
+  
+  const iphoneModels = [
+    'iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone 17 Air', 'iPhone 17', 'iPhone 17e', 'iPhone 16e',
+    'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16',
+    'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15 Plus', 'iPhone 15',
+    'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14 Plus', 'iPhone 14', 'iPhone SE (3ème gén.)',
+    'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 13 mini',
+    'iPhone 12 Pro Max', 'iPhone 12 Pro', 'iPhone 12', 'iPhone 12 mini', 'iPhone SE (2ème gén.)',
+    'iPhone 11 Pro Max', 'iPhone 11 Pro', 'iPhone 11',
+    'iPhone XS Max', 'iPhone XS', 'iPhone XR', 'iPhone X'
+  ];
+  
+  iphoneModels.forEach(model => addModelField(model));
+};
+
+// Clear all model fields
+window.clearModelFields = function() {
+  modelsContainer.innerHTML = '';
+  modelCount = 0;
+};
 

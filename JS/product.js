@@ -155,10 +155,13 @@ function renderProduct() {
         <div class="product-price-large">${parseFloat(price).toLocaleString('en-IN')}F</div>
         ${description ? `<p class="product-description">${description}</p>` : ''}
 
-        ${hasModels ? `
+${hasModels ? `
           <div class="variant-section active">
-            <div class="variant-title">Sélectionner un modèle <span>*</span></div>
-            <div class="models-grid" id="models-grid"></div>
+            <div class="variant-title">Choisissez un modèle <span>*</span></div>
+            <button onclick="showModelSelectorModal()" id="model-open-modal-btn" class="btn btn-outline" style="width:100%; padding:16px 24px; font-size:1rem;">
+              <i class="fas fa-th-large"></i> <span id="model-open-modal-text">Tous les modèles</span>
+              <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
+            </button>
           </div>
         ` : ''}
 
@@ -193,24 +196,41 @@ function renderProduct() {
     </div>
   `;
 
-  // Render models
+// Render models
   if (hasModels && models) {
     const modelsGrid = document.getElementById('models-grid');
-    models.forEach((model, index) => {
-      const div = document.createElement('div');
-      div.className = 'model-option';
-      div.dataset.value = model;
-      div.innerHTML = `
-        <input type="radio" name="model" id="model-${index}" value="${model}" style="margin: 0;">
-        <label for="model-${index}" style="cursor: pointer; margin: 0;">${model}</label>
-      `;
-      modelsGrid.appendChild(div);
-    });
+    if (!modelsGrid) return;
+    
+    // Check if "All iPhone" model exists - show popup selector instead
+    const allIphoneIndex = models.findIndex(m => m.toLowerCase() === 'all iphone');
+    if (allIphoneIndex !== -1) {
+      // Show special iPhone selector button
+      const btn = document.createElement('button');
+      btn.className = 'model-option';
+      btn.style.cssText = 'background: var(--primary); color: #fff; border-2px solid var(--primary); padding: 16px 24px; font-size: 1rem; width: 100%; justify-content: center;';
+      btn.innerHTML = '<i class="fab fa-apple" style="font-size: 1.2rem;"></i> Select iPhone Model <i class="fas fa-chevron-down" style="margin-left:8px;"></i>';
+      btn.onclick = () => showIphoneModelModal();
+      btn.id = 'iphone-model-btn';
+      modelsGrid.appendChild(btn);
+    } else {
+      // Normal model rendering
+      models.forEach((model, index) => {
+        const div = document.createElement('div');
+        div.className = 'model-option';
+        div.dataset.value = model;
+        div.innerHTML = `
+          <input type="radio" name="model" id="model-${index}" value="${model}" style="margin: 0;">
+          <label for="model-${index}" style="cursor: pointer; margin: 0;">${model}</label>
+        `;
+        modelsGrid.appendChild(div);
+      });
+    }
   }
 
   // Render colors
   if (hasColors && colors) {
     const colorsGrid = document.getElementById('colors-grid');
+    if (!colorsGrid) return;
     colors.slice(0, 4).forEach((color, index) => {
       const button = document.createElement('button');
       button.className = 'color-option';
@@ -431,6 +451,212 @@ window.buyNow = async function () {
     console.error("Buy Now Error:", error);
     showToast("Erreur lors du traitement de l'achat immédiat");
   }
+};
+
+// Show generic model selection modal (works for ALL models, not just iPhone)
+window.showModelSelectorModal = function() {
+  const modal = document.getElementById('model-elector-modal');
+  if (modal) { modal.remove(); }
+  if (!productData || !productData.models || !productData.models.length) return;
+
+  // Inject modal styles once
+  if (!document.getElementById('modal-styles')) {
+    const style = document.createElement('style');
+    style.id = 'modal-styles';
+    style.textContent = `
+      .modal-overlay {
+        position:fixed;top:0;left:0;right:0;bottom:0;
+        background:rgba(15,23,42,0.6);
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);
+        display:flex;align-items:flex-end;justify-content:center;
+        z-index:99999;padding:0;
+        animation:modalFadeIn 0.3s cubic-bezier(0.4,0,0.2,1);
+      }
+      @keyframes modalFadeIn { from{opacity:0} to{opacity:1} }
+      .modal-sheet {
+        background:#fff;
+        border-radius:24px 24px 0 0;
+        max-width:560px;width:100%;
+        max-height:85vh;
+        display:flex;flex-direction:column;
+        box-shadow:0 -10px 40px rgba(15,23,42,0.2);
+        animation:modalSlideUp 0.4s cubic-bezier(0.4,0,0.2,1);
+      }
+      @keyframes modalSlideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+      .modal-handle {
+        width:40px;height:4px;
+        background:#e2e8f0;border-radius:2px;
+        margin:12px auto 0;
+        flex-shrink:0;
+      }
+      .modal-header {
+        padding:20px 24px 16px;
+        display:flex;justify-content:space-between;align-items:flex-start;
+        flex-shrink:0;border-bottom:1px solid #f1f5f9;
+      }
+      .modal-header-title {
+        font-size:1.1rem;font-weight:700;color:#0f172a;
+        display:flex;align-items:center;gap:10px;
+      }
+      .modal-header-title i { color:var(--primary); font-size:1rem; }
+      .modal-subtitle {
+        font-size:0.8rem;color:#94a3b8;margin-top:2px;
+        display:block;
+      }
+      .modal-close {
+        width:36px;height:36px;border-radius:50%;border:none;
+        background:#f1f5f9;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        color:#64748b;font-size:14px;
+        transition:all 0.2s;flex-shrink:0;
+      }
+      .modal-close:hover { background:#fee2e2;color:#ef4444; }
+      .modal-search {
+        padding:12px 16px;flex-shrink:0;
+      }
+      .modal-search-input {
+        width:100%;padding:12px 16px 12px 42px;
+        border:2px solid #e2e8f0;border-radius:14px;
+        font-size:0.95rem;font-family:inherit;
+        background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") no-repeat 14px center;
+        outline:none;transition:border-color 0.2s;
+      }
+      .modal-search-input:focus { border-color:var(--primary); }
+      .modal-list {
+        padding:8px 16px 24px;
+        display:flex;flex-direction:column;
+        gap:6px;overflow-y:auto;flex:1;
+      }
+      .model-modal-item {
+        display:flex;align-items:center;gap:12px;
+        padding:14px 18px;
+        background:#fff;
+        border:2px solid #e2e8f0;
+        border-radius:14px;cursor:pointer;
+        font-size:0.95rem;font-weight:500;color:#0f172a;
+        text-align:left;width:100%;
+        transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
+      }
+      .model-modal-item:hover {
+        border-color:var(--primary);background:#e0e7ff;
+        transform:translateX(4px);
+      }
+      .model-modal-item.selected {
+        border-color:var(--primary);background:var(--primary);
+        color:#fff;
+      }
+      .model-modal-item .check-icon {
+        margin-left:auto;font-size:1rem;
+        color:var(--primary);opacity:0;
+        transition:opacity 0.2s;
+      }
+      .model-modal-item.selected .check-icon { opacity:1;color:#fff; }
+      .model-modal-item .item-badge {
+        font-size:0.7rem;padding:3px 8px;border-radius:20px;
+        background:#f1f5f9;color:#64748b;font-weight:600;
+      }
+      .model-modal-item.selected .item-badge {
+        background:rgba(255,255,255,0.25);color:#fff;
+      }
+      .modal-footer {
+        padding:12px 24px 24px;
+        flex-shrink:0;
+      }
+      .modal-apply-btn {
+        width:100%;padding:16px;border-radius:14px;
+        background:var(--primary);color:#fff;
+        font-size:1rem;font-weight:600;font-family:inherit;
+        border:none;cursor:pointer;
+        transition:all 0.2s;display:flex;
+        align-items:center;justify-content:center;gap:8px;
+      }
+      .modal-apply-btn:hover {
+        background:var(--primary-dark);
+        transform:translateY(-1px);
+        box-shadow:0 4px 12px rgba(79,70,229,0.35);
+      }
+      @media(min-width:560px) {
+        .modal-overlay { align-items:center;padding:20px; }
+        .modal-sheet { border-radius:24px;max-height:75vh; }
+        .modal-handle { display:none; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const modalEl = document.createElement('div');
+  modalEl.id = 'model-selector-modal';
+  modalEl.className = 'modal-overlay';
+  modalEl.innerHTML = `
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div>
+          <div class="modal-header-title">
+            <i class="fas fa-th-large"></i> Choisir un modèle
+          </div>
+          <span class="modal-subtitle">${productData.name}</span>
+        </div>
+        <button class="modal-close" onclick="closeModelSelectorModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-search">
+        <input type="text" id="model-search-input" class="modal-search-input"
+          placeholder="Rechercher un modèle..." autocomplete="off">
+      </div>
+      <div id="model-selector-list" class="modal-list">
+        ${productData.models.map(m => {
+          const isSelected = selectedModel === m;
+          return `<button onclick="selectModelFromModal('${m.replace(/'/g, "\\'")}')"
+            class="model-modal-item ${isSelected ? 'selected' : ''}"
+            data-model="${m.toLowerCase()}">
+            ${isSelected ? '<i class="fas fa-check-circle check-icon"></i>' : ''}
+            ${m}
+          </button>`;
+        }).join('')}
+      </div>
+      <div class="modal-footer">
+        <button class="modal-apply-btn" onclick="closeModelSelectorModal()">
+          <i class="fas fa-check"></i> Appliquer
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modalEl);
+
+  // Close on overlay click
+  modalEl.addEventListener('click', (e) => {
+    if (e.target === modalEl) closeModelSelectorModal();
+  });
+
+  // Search/filter functionality
+  const searchInput = document.getElementById('model-search-input');
+  const list = document.getElementById('model-selector-list');
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    list.querySelectorAll('.model-modal-item').forEach(item => {
+      const match = item.dataset.model.includes(query);
+      item.style.display = match ? '' : 'none';
+    });
+  });
+};
+
+window.closeModelSelectorModal = function() {
+  const m = document.getElementById('model-selector-modal');
+  if (m) m.remove();
+};
+
+window.selectModelFromModal = function(model) {
+  selectedModel = model;
+  const btn = document.getElementById('model-open-modal-btn');
+  const text = document.getElementById('model-open-modal-text');
+  if (btn) { btn.classList.add('selected'); btn.style.borderColor = 'var(--primary)'; }
+  if (text) { text.textContent = model; }
+  closeModelSelectorModal();
+  updateSelectedInfo();
+  updateActionButtons();
 };
 
 loadProduct();

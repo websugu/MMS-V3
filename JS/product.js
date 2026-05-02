@@ -141,6 +141,10 @@ function renderProduct() {
     document.title = `${name} — Boutique`;
   }
 
+  // Debug log
+  console.log('Rendering product:', name);
+  console.log('hasColors:', hasColors, 'colors:', colors);
+
   container.innerHTML = `
     <div class="product-detail-grid">
       <div class="product-image-section">
@@ -165,7 +169,7 @@ ${hasModels ? `
           </div>
         ` : ''}
 
-        ${hasColors ? `
+${hasColors ? `
           <div class="variant-section active">
             <div class="variant-title">choisissez une couleur <span>*</span></div>
             <div class="colors-grid" id="colors-grid"></div>
@@ -178,13 +182,13 @@ ${hasModels ? `
         </div>
 
         <div class="action-buttons">
-          <button id="add-to-cart-btn" class="btn btn-primary" ${hasModels ? 'disabled' : ''}>
+          <button id="add-to-cart-btn" class="btn btn-primary" ${hasModels || hasColors ? 'disabled' : ''}>
             <i class="fas fa-cart-plus"></i>
-            <span>${hasModels ? 'Select a model' : 'Ajouter au panier'}</span>
+            <span>${hasModels ? 'Select a model' : hasColors ? 'Select a color' : 'Ajouter au panier'}</span>
           </button>
-          <button id="buy-now-btn" class="btn btn-accent" ${hasModels ? 'disabled' : ''}>
+          <button id="buy-now-btn" class="btn btn-accent" ${hasModels || hasColors ? 'disabled' : ''}>
             <i class="fas fa-bolt"></i>
-            <span>${hasModels ? 'Select a model' : 'Acheter maintenant'}</span>
+            <span>${hasModels ? 'Select a model' : hasColors ? 'Select a color' : 'Acheter maintenant'}</span>
           </button>
           <a href="index.html" style="flex:1;">
             <button class="btn btn-secondary" style="width:100%;">
@@ -196,50 +200,53 @@ ${hasModels ? `
     </div>
   `;
 
-// Render models
-  if (hasModels && models) {
-    const modelsGrid = document.getElementById('models-grid');
-    if (!modelsGrid) return;
-    
-    // Check if "All iPhone" model exists - show popup selector instead
-    const allIphoneIndex = models.findIndex(m => m.toLowerCase() === 'all iphone');
-    if (allIphoneIndex !== -1) {
-      // Show special iPhone selector button
-      const btn = document.createElement('button');
-      btn.className = 'model-option';
-      btn.style.cssText = 'background: var(--primary); color: #fff; border-2px solid var(--primary); padding: 16px 24px; font-size: 1rem; width: 100%; justify-content: center;';
-      btn.innerHTML = '<i class="fab fa-apple" style="font-size: 1.2rem;"></i> Select iPhone Model <i class="fas fa-chevron-down" style="margin-left:8px;"></i>';
-      btn.onclick = () => showIphoneModelModal();
-      btn.id = 'iphone-model-btn';
-      modelsGrid.appendChild(btn);
-    } else {
-      // Normal model rendering
-      models.forEach((model, index) => {
-        const div = document.createElement('div');
-        div.className = 'model-option';
-        div.dataset.value = model;
-        div.innerHTML = `
-          <input type="radio" name="model" id="model-${index}" value="${model}" style="margin: 0;">
-          <label for="model-${index}" style="cursor: pointer; margin: 0;">${model}</label>
-        `;
-        modelsGrid.appendChild(div);
-      });
-    }
-  }
-
-  // Render colors
-  if (hasColors && colors) {
+  // Render colors AFTER HTML is inserted
+  if (hasColors && colors && colors.length > 0) {
     const colorsGrid = document.getElementById('colors-grid');
-    if (!colorsGrid) return;
-    colors.slice(0, 4).forEach((color, index) => {
-      const button = document.createElement('button');
-      button.className = 'color-option';
-      button.style.backgroundColor = color.toLowerCase();
-      button.dataset.color = color;
-      button.dataset.index = index;
-      button.title = color;
-      colorsGrid.appendChild(button);
-    });
+    console.log('colorsGrid element:', colorsGrid);
+    
+    if (colorsGrid) {
+      // Clear any existing content
+      colorsGrid.innerHTML = '';
+      
+      // Show all colors
+      colors.forEach((color, index) => {
+        console.log('Rendering color:', color, 'at index:', index);
+        
+        const button = document.createElement('button');
+        button.className = 'color-option';
+        button.style.backgroundColor = color.toLowerCase();
+        button.dataset.color = color;
+        button.dataset.index = index;
+        button.title = color;
+        button.setAttribute('aria-label', `Select ${color} color`);
+        
+        // Add color name label below the color circle
+        const label = document.createElement('span');
+        label.className = 'color-label';
+        label.textContent = color;
+        label.style.display = 'block';
+        label.style.fontSize = '11px';
+        label.style.marginTop = '4px';
+        label.style.color = 'var(--text-secondary)';
+        
+        // Wrap in a container for better layout
+        const wrapper = document.createElement('div');
+        wrapper.className = 'color-option-wrapper';
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'column';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.gap = '2px';
+        wrapper.appendChild(button);
+        wrapper.appendChild(label);
+        
+        colorsGrid.appendChild(wrapper);
+      });
+      
+      console.log('Colors rendered:', colorsGrid.children.length);
+    } else {
+      console.error('colorsGrid not found in DOM');
+    }
   }
 }
 
@@ -269,12 +276,23 @@ function setupEventListeners() {
     }
   });
 
-  // Color selection
+// Color selection
   container.addEventListener('click', (e) => {
-    if (e.target.classList.contains('color-option')) {
+    const colorOption = e.target.closest('.color-option');
+    if (colorOption) {
+      // Remove selected from all options
       document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('selected'));
-      e.target.classList.add('selected');
-      selectedColor = e.target.dataset.color;
+      // Remove selected from all wrappers
+      document.querySelectorAll('.color-option-wrapper').forEach(w => w.classList.remove('selected'));
+      
+      // Add selected to clicked option
+      colorOption.classList.add('selected');
+      
+      // Add selected to wrapper if exists
+      const wrapper = colorOption.closest('.color-option-wrapper');
+      if (wrapper) wrapper.classList.add('selected');
+      
+      selectedColor = colorOption.dataset.color;
       updateSelectedInfo();
       updateActionButtons();
     }

@@ -155,7 +155,6 @@ function renderProduct() {
 
       <div class="product-info-section">
         <h1 class="product-title">${name}</h1>
-        ${productData.category ? `<div style="display:inline-block;background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:10px;">${productData.category}</div>` : ''}
         <div class="product-price-large">${parseFloat(price).toLocaleString('en-IN')}F</div>
         ${description ? `<p class="product-description">${description}</p>` : ''}
 

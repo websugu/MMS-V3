@@ -264,6 +264,12 @@ body::before {
   box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
 }
 
+#google-login-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #ccc;
+  transform: translateY(-2px);
+}
+
 .btn-submit:disabled {
   background: var(--text-muted);
   cursor: not-allowed;
@@ -375,7 +381,7 @@ body::before {
   <div class="auth-body">
     <!-- LOGIN FORM -->
     <div id="login-form" class="form active">
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label>Email Address</label>
         <div class="input-wrapper">
           <i class="fas fa-envelope"></i>
@@ -393,11 +399,15 @@ body::before {
 
       <button class="btn-submit" onclick="login()">
         <i class="fas fa-sign-in-alt"></i> Continue
+      </button> -->
+
+      <button id="google-login-btn" class="btn-submit" onclick="googleLogin()" style="background: #fff; color: #333; border: 2px solid #e0e0e0; margin-top: 12px;">
+        <i class="fab fa-google"></i> Continue with Google
       </button>
 
-      <div style="text-align: center; margin-top: 16px;">
-        <a href="index.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg); color: var(--text-secondary); border-radius: var(--radius-sm); text-decoration: none; font-size: 0.9rem; font-weight: 500; border: 1px solid var(--border); transition: var(--transition);">
-          <i class="fas fa-user-secret"></i> Continuer en tant qu'invité
+      <div style="text-align: center; margin-top: 16px;" class="btn-submit">
+        <a href="index.html" style="display: inline-flex; align-items: center; color: white; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: var(--transition);">
+          Continuer en tant qu'invité
         </a>
       </div>
 
@@ -408,7 +418,7 @@ body::before {
 
     <!-- SIGNUP FORM -->
     <div id="signup-form" class="form">
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label>Email Address</label>
         <div class="input-wrapper">
           <i class="fas fa-envelope"></i>
@@ -449,8 +459,10 @@ body::before {
 
       <button class="btn-submit" onclick="signup()">
         <i class="fas fa-user-plus"></i> Créer un compte
+      </button> -->
+      <button id="google-login-btn" class="btn-submit" onclick="googleLogin()" style="background: #fff; color: #333; border: 2px solid #e0e0e0; margin-top: 12px;">
+        <i class="fab fa-google"></i> Continue with Google
       </button>
-
       <div class="auth-toggle">
         Vous avez déjà un compte ? <button onclick="showLogin()">Connexion</button>
       </div>
@@ -490,6 +502,7 @@ body::before {
 </script>
 
 <script type="module" src="JS/login.js"></script>
+<script type="module" src="JS/google-login.js"></script>
 
 </body>
 </html>

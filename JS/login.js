@@ -2,7 +2,10 @@ import { auth, db } from "./firebase.js";
 
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import {
@@ -113,6 +116,44 @@ window.signup = async function () {
 };
 
 
+// LOGIN — Google
+window.googleLogin = async function () {
+  const originalBtn = `<i class="fab fa-google"></i> Continue with Google`;
+  const googleBtn = document.querySelector('#google-login-btn');
+  if (googleBtn) {
+    googleBtn.disabled = true;
+    googleBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Connecting...`;
+  }
+
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Create/update user doc
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      createdAt: new Date(),
+      provider: 'google'
+    }, { merge: true });
+
+    // Skip phone mappings for Google users
+
+    showStatus("Welcome! Redirecting...", "success");
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    showStatus(error.message || "Google login failed. Please try again.");
+  } finally {
+    if (googleBtn) {
+      googleBtn.disabled = false;
+      googleBtn.innerHTML = originalBtn;
+    }
+  }
+};
+
 // LOGIN — Email + Password
 window.login = async function () {
   const email = document.getElementById("login-email").value.trim().toLowerCase();
@@ -137,6 +178,8 @@ window.login = async function () {
   } catch (error) {
     console.error("Login Error:", error);
     showStatus(error.message || "Login failed. Please check your email and password.");
+    setLoading(false, "#login-form .btn-submit", originalBtn);
+  } finally {
     setLoading(false, "#login-form .btn-submit", originalBtn);
   }
 };
